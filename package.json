@@ -1,6 +1,6 @@
 {
-  "name": "ember-simple-auth-auth0",
-  "version": "0.0.0",
+  "name": "ember-simple-auth0",
+  "version": "0.0.1",
   "description": "The default blueprint for ember-cli addons.",
   "directories": {
     "doc": "doc",
@@ -15,7 +15,7 @@
   "engines": {
     "node": ">= 0.10.0"
   },
-  "author": "",
+  "author": "Aram Zadikian",
   "license": "MIT",
   "devDependencies": {
     "broccoli-asset-rev": "^2.0.2",

@@ -19,6 +19,12 @@ module.exports = function(environment) {
     }
   };
 
+  // Test auth0 app
+  ENV['ember-simple-auth0'] = {
+    clientID: "b70uq2ptGHa7Tw4HKPHwS68QDxT0Tnbf",
+    domain: "mlvk.auth0.com"
+  }
+
   if (environment === 'development') {
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
