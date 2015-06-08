@@ -6,26 +6,42 @@ var bool = Ember.computed.bool;
 
 export default Base.extend({
   
-  _lock: null,
-  _scheduledJobCollection: Ember.A(),
-  _sessionData: Ember.Object.create(),
-
-  domain: null,
-
-  clientID: null,
+  /**
+   * The session data
+   * @type {Ember Object}
+   */
+  sessionData: read('_sessionData'),
 
   /**
-    @method init
-    @private
-  */
-  init: function() {
-    var applicationConfig = this.container.lookupFactory('config:environment');
-    var config = applicationConfig['ember-simple-auth0'];
+   * The job queue
+   * @type {Ember Array}
+   */
+  scheduledJobCollection: read('_scheduledJobCollection'),
 
-    var lock = new Auth0Lock(config.clientID, config.domain);
-    this.set('_lock', lock);
-  },
-
+  /**
+   * The env config found in the environment config.
+   * ENV['simple-lock']
+   * 
+   * @type {Object}
+   */
+  config: read('_config'),
+  /**
+   * Auth0 Lock Instance
+   * @type {Auth0Lock}
+   */
+  lock: read('_lock'),
+  
+  /**
+   * The Auth0 App ClientID found in your Auth0 dashboard
+   * @type {String}
+   */
+  clienID: read('_clientID'),
+  
+  /**
+   * The Auth0 App Domain found in your Auth0 dashboard
+   * @type {String}
+   */
+  domain: read('_domain'),
   /**
    * The auth0 userID.
    * @return {String}
@@ -57,12 +73,28 @@ export default Base.extend({
   jwt: read('_sessionData.jwt'),
 
   /**
-   * Is the currently a jwt in store
+   * Is there currently a jwt?
    * @return {Boolean}
    */
   hasJWT: Ember.computed('jwt', function(){
     return !Ember.isBlank(this.get('jwt'));
   }),
+
+  init: function() {
+    var applicationConfig = this.container.lookupFactory('config:environment');
+
+    var config = applicationConfig['simple-lock'];
+    this.set('_config', config);
+
+    this.set('_sessionData', Ember.Object.create());
+    this.set('_scheduledJobCollection', Ember.A());
+
+    this.set('_clientID', config.clientID);
+    this.set('_domain', config.domain);
+
+    var lock = new Auth0Lock(this.get('clientID'), this.get('domain'));
+    this.set('_lock', lock);
+  },
 
   /**
    * Hook called before triggering the invalidate in simple auth
@@ -70,6 +102,28 @@ export default Base.extend({
    */
   beforeExpire: function(){
     return Ember.RSVP.resolve();
+  },
+
+  /**
+   * Hook called after auth0 has authenticated but before
+   * the simple-auth completes session creation.
+   * This is a great place to decorate the session object.
+   * 
+   * @return {Promoise} With the decorated session object
+   */
+  afterAuth: function(data){
+    return Ember.RSVP.resolve(data);
+  },
+
+  /**
+   * Hook called after auth0 has refreshed the jwt but before
+   * the simple-auth triggers the sessionUpdated event.
+   * This is a great place to decorate the session object.
+   * 
+   * @return {Promoise} With the decorated session object
+   */
+  afterRefresh: function(data){
+    return Ember.RSVP.resolve(data);
   },
 
   /**
@@ -82,10 +136,10 @@ export default Base.extend({
     }else{
       return this._extractExpireTime(this.get('jwt'));
     }
-  }.property('_sessionData.jwt'),
+  }.property('sessionData.jwt'),
 
   restore: function(data) {
-    this.get('_sessionData').setProperties(data);
+    this.get('sessionData').setProperties(data);
 
     if(this._jwtRemainingTime() < 1){
       if(this.get('hasRefreshToken')){
@@ -94,18 +148,20 @@ export default Base.extend({
         return Ember.RSVP.reject();
       }
     }else{
-      return Ember.RSVP.resolve(this._setupFutureEvents());
+      return self.afterAuth(sessionData)
+            .then(function(response){
+              return Ember.RSVP.resolve(this._setupFutureEvents(response));
+            });
     }
   },
 
   authenticate: function(options) {
     var self = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      self.get('_lock').show(options, function(err, profile, jwt, accessToken, state, refreshToken) {
+      self.get('lock').show(options, function(err, profile, jwt, accessToken, state, refreshToken) {
         if(err){
           reject(err);
         }else{
-
           var sessionData = {
             profile:profile,
             jwt:jwt,
@@ -113,18 +169,21 @@ export default Base.extend({
             refreshToken:refreshToken
           };
 
-          resolve(self._setupFutureEvents(sessionData));
+          self.afterAuth(sessionData)
+          .then(function(response){
+            resolve(self._setupFutureEvents(response));  
+          });
         }
-        
       });
+
     });
 
   },
 
   invalidate: function(/* data */) {
-    var headers = {"Authorization": "Bearer " + this.get('jwt')};
+    var headers = {'Authorization':'Bearer ' + this.get('jwt')};
     
-    var url = "https://mlvk.auth0.com/api/users/"+this.get('userID')+"/refresh_tokens/"+this.get('refreshToken');
+    var url = 'https://'+this.get('domain')+'/api/users/'+this.get('clientID')+'/refresh_tokens/'+this.get('refreshToken');
     
     var self = this;
 
@@ -137,7 +196,7 @@ export default Base.extend({
   // Private Methods
   //=======================
   _setupFutureEvents: function(data){
-    this.get('_sessionData').setProperties(data);
+    this.get('sessionData', data).setProperties(data);
 
     // Just got a new lease on life so let's clear all old jobs
     this._clearJobQueue();
@@ -150,7 +209,7 @@ export default Base.extend({
       this._scheduleRefresh();
     }
 
-    return this.get('_sessionData');
+    return this.get('sessionData');
   },
 
   _scheduleRefresh: function(){
@@ -172,7 +231,6 @@ export default Base.extend({
   },
 
   _clearJobQueue: function(){
-
     var queue = this.get('_scheduledJobCollection');
     queue.forEach(function(job){
       Ember.run.cancel(job);
@@ -191,11 +249,14 @@ export default Base.extend({
   _refreshAuth0Token: function(){
     var self = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      self.get('_lock').getClient().refreshToken(self.get('refreshToken'), function (err, result) {
+      self.get('lock').getClient().refreshToken(self.get('refreshToken'), function (err, result) {
         if(err){
           reject(err);
         }else{
-          resolve(self._setupFutureEvents({jwt:result.id_token}));
+          self.afterRefresh({jwt:result.id_token})
+          .then(function(response){
+            resolve(self._setupFutureEvents(response));  
+          });
         }
       });
     });
