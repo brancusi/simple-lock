@@ -23,7 +23,13 @@ module.exports = function(environment) {
   ENV['ember-simple-auth0'] = {
     clientID: "b70uq2ptGHa7Tw4HKPHwS68QDxT0Tnbf",
     domain: "mlvk.auth0.com"
-  }
+  };
+
+  ENV['simple-auth'] = {
+    authenticationRoute: 'index',
+    routeAfterAuthentication: 'protected',
+    routeIfAlreadyAuthenticated: 'protected'
+  };
 
   if (environment === 'development') {
     // ENV.APP.LOG_RESOLVER = true;

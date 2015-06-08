@@ -2,7 +2,10 @@
   "predef": [
     "document",
     "window",
-    "-Promise"
+    "-Promise",
+    "Auth0Lock",
+    "KJUR",
+    "b64utos"
   ],
   "browser": true,
   "boss": true,

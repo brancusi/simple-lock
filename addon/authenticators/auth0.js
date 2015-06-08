@@ -19,10 +19,10 @@ export default Base.extend({
     @private
   */
   init: function() {
-    this.domain            = Configuration.domain;
-    this.clientID          = Configuration.clientID;
+    var applicationConfig = this.container.lookupFactory('config:environment');
+    var config = applicationConfig['ember-simple-auth0'];
 
-    var lock = new Auth0Lock(this.clientID, this.domain);
+    var lock = new Auth0Lock(config.clientID, config.domain);
     this.set('_lock', lock);
   },
 
@@ -121,7 +121,7 @@ export default Base.extend({
 
   },
 
-  invalidate: function(data) {
+  invalidate: function(/* data */) {
     var headers = {"Authorization": "Bearer " + this.get('jwt')};
     
     var url = "https://mlvk.auth0.com/api/users/"+this.get('userID')+"/refresh_tokens/"+this.get('refreshToken');
@@ -146,7 +146,9 @@ export default Base.extend({
     this._scheduleExpire();
 
     // There is hope, if a refresh token exists, we may just find immortality
-    if(this.get('hasRefreshToken'))this._scheduleRefresh();
+    if(this.get('hasRefreshToken')){
+      this._scheduleRefresh();
+    }
 
     return this.get('_sessionData');
   },
@@ -204,11 +206,6 @@ export default Base.extend({
     this._refreshAuth0Token().then(function(data){
       self.trigger('sessionDataUpdated', data);
     });
-  },
-
-  _scheduleJob: function(scope, callback, time){
-    var job = Ember.run.later(scope, callback, time);
-    this.get('_scheduledJobCollection').addObject(job);
   },
 
   //=======================
