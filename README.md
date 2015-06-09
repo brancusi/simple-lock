@@ -1,4 +1,5 @@
-# Simple-Lock, an ember addon for using Auth0's Lock.js with Ember-Simple-Auth.
+# Simple-Lock
+## An ember addon for using Auth0's Lock.js with Ember-Simple-Auth.
 
 Auth0's Lock.js is a nice way to get a fully functional signup and login workflow into your app. [Auth0](https://auth0.com/).
 
@@ -16,23 +17,18 @@ If you don't already have an account, go signup at for free: [Auth0](https://aut
 1. Create a new app through your dashboard.
 2. Done!
 
-### Install ember and addon using ember-cli
+### Install ember and simple-lock using ember-cli
 
 ```bash
 bash:$ ember new hello-safe-world
 bash:$ ember install simple-lock
 ```
 
-If you want to get up and running right away, you can scaffold all the neccesary routes with:
+If you want to get up and running right away, you can scaffold all the neccesary routes with to play with:
 
 ```bash
 bash:$ ember generate scaffold-lock
-bash:$ ember server
 ```
-
-By default this will use a dummy Auth0 account.
-
-The following steps will explain how to setup your app.
 
 ### Configuration
 
@@ -49,9 +45,14 @@ ENV['simple-lock'] = {
 }
 ```
 
-Setup all your other regular configuration based on the ember-simple-auth docs
+__At this point if you ran *scaffold-lock*, you can fire up ember server:__
 
-## Suggested security config
+```bash
+bash:$ ember server
+```
+__The below steps will outline the steps to get up and running with the scaffolding:__
+
+### Suggested security config
 ```js
 // config/environment.js
 
@@ -64,10 +65,17 @@ ENV['contentSecurityPolicy'] = {
   };
 
 ```
+## Manual Setup
 
-## Actions
+Simple-Lock is just a single __authorizer__ that conforms to the ember-simple-auth interface. Please follow the docs to get everything works as usual and just add the call to the *Simple-Lock* __authorizer__ in your ```authenticate``` call.
+
+[Ember Simple Auth](https://github.com/simplabs/ember-simple-auth)
+
+### Actions
 
 Once the standard ember-simple-auth ```application_route_mixin``` is added to your app route, you will be able to use all the usual actions [Docs]([Docs](http://ember-simple-auth.com/ember-simple-auth-api-docs.html#SimpleAuth-ApplicationRouteMixin)):
+
+__Here is an example application route:__
 
 ```js
 // app/routes/application.js
@@ -78,14 +86,19 @@ import ApplicationRouteMixin from 'simple-auth/mixins/application-route-mixin';
 export default Ember.Route.extend(ApplicationRouteMixin, {
   actions: {
     sessionRequiresAuthentication: function(){
-      var options = {authParams:{scope: 'openid offline_access'}};
-      this.get('session').authenticate('simple-lock:lock', options);
+      // Check out the docs for all the options: 
+      // https://auth0.com/docs/libraries/lock/customization
+      
+      // These options will request a refresh token and launch lock.js in popup mode by default
+      var lockOptions = {authParams:{scope: 'openid offline_access'}};
+
+      this.get('session').authenticate('simple-auth-authenticator:lock', lockOptions);
     }
   }
 });
 ```
 
-Then from your template you could trigger the action:
+__Then from your template you could trigger the usual actions:__
 
 ```html
 // app/templates/application.hbs
@@ -97,7 +110,7 @@ Then from your template you could trigger the action:
 {{/if}}
 ```
 
-## Custom Authorizers
+### Custom Authorizers
 
 You can easily extend the __simple-lock__ base authorizer to play hooky with some cool __hooks__.
 
