@@ -38,8 +38,16 @@ There are two configuration options.
 1. (REQUIRED) - _clientID_ - Grab from your Auth0 Dashboard
 2. (REQUIRED) - _domain_ - Grab from your Auth0 Dashboard
 
+*The below simple-auth config object works out the box with the scaffold*
+
 ```js
 // config/environment.js
+ENV['simple-auth'] = {
+  authenticationRoute: 'index',
+  routeAfterAuthentication: 'protected',
+  routeIfAlreadyAuthenticated: 'protected'
+}
+
 ENV['simple-lock'] = {
   clientID: "auth0_client_id",
   domain: "auth0_domain"
@@ -66,6 +74,7 @@ ENV['contentSecurityPolicy'] = {
   };
 
 ```
+
 ## Manual Setup
 
 Simple-Lock is just a single __authorizer__ that conforms to the ember-simple-auth interface. Please follow the docs to get everything works as usual and just add the call to the *Simple-Lock* __authorizer__ in your ```authenticate``` call.
