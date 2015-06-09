@@ -21,6 +21,7 @@ If you don't already have an account, go signup at for free: [Auth0](https://aut
 
 ```bash
 bash:$ ember new hello-safe-world
+bash:$ cd hello-safe-world
 bash:$ ember install simple-lock
 ```
 
