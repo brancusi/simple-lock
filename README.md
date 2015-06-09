@@ -77,7 +77,7 @@ ENV['contentSecurityPolicy'] = {
 
 ## Manual Setup
 
-Simple-Lock is just a single __authorizer__ that conforms to the ember-simple-auth interface. Please follow the docs to get everything works as usual and just add the call to the *Simple-Lock* __authorizer__ in your ```authenticate``` call.
+Simple-Lock is just a single __authorizer__ that conforms to the ember-simple-auth interface. Please follow the docs to get everything working as usual and just add the call to the *Simple-Lock* __authorizer__ in your ```authenticate``` call.
 
 [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth)
 
