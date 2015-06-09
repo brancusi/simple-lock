@@ -1,7 +1,7 @@
 {
   "name": "simple-lock",
-  "version": "0.1.4",
-  "description": "Auth0 + lock.js, built on ember-simple-auth",
+  "version": "0.1.5",
+  "description": "Ember-simple-auth addon for Auth0 + Lock.js",
   "directories": {
     "doc": "doc",
     "test": "tests"
@@ -38,7 +38,11 @@
     "ember-try": "0.0.6"
   },
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "auth0",
+    "authentication",
+    "ember-simple-auth",
+    "lock.js"
   ],
   "dependencies": {
     "ember-cli-babel": "^5.0.0",
