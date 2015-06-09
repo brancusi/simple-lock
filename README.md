@@ -83,7 +83,7 @@ Simple-Lock is just a single __authorizer__ that conforms to the ember-simple-au
 
 ### Actions
 
-Once the standard ember-simple-auth ```application_route_mixin``` is added to your app route, you will be able to use all the usual actions [Docs]([Docs](http://ember-simple-auth.com/ember-simple-auth-api-docs.html#SimpleAuth-ApplicationRouteMixin)):
+Once the standard ember-simple-auth ```application_route_mixin``` is added to your app route, you will be able to use all the usual actions [Docs](https://github.com/simplabs/ember-simple-auth)
 
 __Here is an example application route:__
 
