@@ -1,6 +1,6 @@
 {
   "name": "simple-lock",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Auth0 + lock.js, built on ember-simple-auth",
   "directories": {
     "doc": "doc",
@@ -35,7 +35,9 @@
     "ember-disable-proxy-controllers": "^1.0.0",
     "ember-export-application-global": "^1.0.2",
     "ember-disable-prototype-extensions": "^1.0.0",
-    "ember-try": "0.0.6"
+    "ember-try": "0.0.6",
+    "ember-router-generator": "^1.0.0",
+    "fs-extra": "0.16.5"
   },
   "keywords": [
     "ember-addon"

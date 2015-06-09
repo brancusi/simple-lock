@@ -35,6 +35,23 @@ export default Base.extend({
   },
 
   /**
+   * Hook called after auth0 refreshes the jwt
+   * based on the refreshToken.
+   *
+   * This only fires if lock.js was passed in
+   * the offline_mode scope params
+   *
+   * IMPORTANT: You must return a promise with the 
+   * session data.
+   * 
+   * @param  {Object} data The new jwt
+   * @return {Promise}     The decorated session object
+   */
+  afterRestore: function(data){
+    return Ember.RSVP.resolve(data);
+  },
+
+  /**
    * Hook that gets called after Auth0 successfully
    * refreshes the jwt if (refresh token is enabled).
    * 

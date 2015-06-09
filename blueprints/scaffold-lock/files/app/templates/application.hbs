@@ -1,0 +1,13 @@
+<h2 id="title">Welcome to Simple Lock</h2>
+
+<header>
+  {{#if session.isAuthenticated}}
+    <h5>You are currently logged as: {{session.secure.profile.email}}</h5>
+    <button {{ action 'invalidateSession' }}>Logout</button>
+  {{else}}
+    <h4>You are currently not logged in.</h4>
+    <button {{ action 'sessionRequiresAuthentication' }}>Login</button>
+  {{/if}}
+</header>
+
+{{outlet}}

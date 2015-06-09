@@ -1,39 +1,48 @@
-[![Build Status](https://travis-ci.org/brancusi/ember-hub-me.svg?branch=master)](https://travis-ci.org/brancusi/ember-hub-me)
-
-# Warning, very much under flux. Do not use right now.
-
 # Simple-Lock, an ember addon for using Auth0's Lock.js with Ember-Simple-Auth.
 
-Lock.js is a nice way to get a fully functional signup and login workflow into your app. [Auth0](https://auth0.com/).
+Auth0's Lock.js is a nice way to get a fully functional signup and login workflow into your app. [Auth0](https://auth0.com/).
 
 ## What does it do?
 
 * it __wires up Auth0's Lock.js to work with ember simple auth__ using [Auth0](https://auth0.com/) and [Lock](https://auth0.com/docs/lock).
-* it __lets you work with ember simple auth__ just like you normally do!
+* it __lets you work with ember simple auth__ just like you normally do! [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth)
 
-## Installation Ember-CLI
+## Installation and Setup
+
+### Auth0
+
+If you don't already have an account, go signup at for free: [Auth0](https://auth0.com/)
+
+1. Create a new app through your dashboard.
+2. Done!
+
+### Install ember and addon using ember-cli
 
 ```bash
-ember install simple-lock
+bash:$ ember new hello-safe-world
+bash:$ ember install simple-lock
 ```
 
-## Blueprints
+If you want to get up and running right away, you can scaffold all the neccesary routes with:
 
 ```bash
-ember generate authenticator my-dope-authenticator
+bash:$ ember generate scaffold-lock
+bash:$ ember server
 ```
 
-### Setup your project
+By default this will use a dummy Auth0 account.
 
-## Configuration
+The following steps will explain how to setup your app.
 
-There are several configuration options.
+### Configuration
+
+There are two configuration options.
 
 1. (REQUIRED) - _clientID_ - Grab from your Auth0 Dashboard
 2. (REQUIRED) - _domain_ - Grab from your Auth0 Dashboard
 
 ```js
-//environment.js
+// config/environment.js
 ENV['simple-lock'] = {
   clientID: "auth0_client_id",
   domain: "auth0_domain"
@@ -42,29 +51,66 @@ ENV['simple-lock'] = {
 
 Setup all your other regular configuration based on the ember-simple-auth docs
 
+## Suggested security config
+```js
+// config/environment.js
+
+ENV['contentSecurityPolicy'] = {
+    'font-src': "'self' data: https://*.auth0.com",
+    'style-src': "'self' 'unsafe-inline'",
+    'script-src': "'self' 'unsafe-eval' https://*.auth0.com",
+    'img-src': '*.gravatar.com *.wp.com data:',
+    'connect-src': "'self' http://localhost:* https://your-app-domain.auth0.com"
+  };
+
+```
+
 ## Actions
 
-Once the ```application_route_mixin``` is added to your app route, you will be able to call the following actions:
+Once the standard ember-simple-auth ```application_route_mixin``` is added to your app route, you will be able to use all the usual actions [Docs]([Docs](http://ember-simple-auth.com/ember-simple-auth-api-docs.html#SimpleAuth-ApplicationRouteMixin)):
+
+```js
+// app/routes/application.js
+
+import Ember from 'ember';
+import ApplicationRouteMixin from 'simple-auth/mixins/application-route-mixin';
+
+export default Ember.Route.extend(ApplicationRouteMixin, {
+  actions: {
+    sessionRequiresAuthentication: function(){
+      var options = {authParams:{scope: 'openid offline_access'}};
+      this.get('session').authenticate('simple-lock:lock', options);
+    }
+  }
+});
+```
+
+Then from your template you could trigger the action:
 
 ```html
-<!-- app/templates/application.hbs -->
-<a {{action 'login'}} href=''>Login</a>
-<a {{action 'logout'}} href=''>Logout</a>
-<a {{action 'register'}} href=''>Register</a>
+// app/templates/application.hbs
+
+{{#if session.isAuthenticated}}
+  <a {{ action 'invalidateSession' }}>Logout</a>
+{{else}}
+  <a {{ action 'sessionRequiresAuthentication' }}>Login</a>
+{{/if}}
 ```
 
 ## Custom Authorizers
 
-There are several hooks you can plug into by extending the simple-lock authorizer.
+You can easily extend the __simple-lock__ base authorizer to play hooky with some cool __hooks__.
 
 Here's how:
 
 ```bash
-ember generate authenticator my-dope-authenticator
+bash:$ ember generate authenticator my-dope-authenticator
 ```
 
+This will create the following stub authenticator:
+
 ```js
-//authorizers/my-dope-authenticator.js
+// app/authorizers/my-dope-authenticator.js
 
 import Base from 'simple-lock/authenticators/lock';
 
@@ -82,7 +128,6 @@ export default Base.extend({
    * @return {Promise}
    */
   beforeExpire: function(){
-    console.log('Gonna call refresh node son!');
     return Ember.RSVP.resolve();
   },
 
@@ -100,7 +145,23 @@ export default Base.extend({
    * @return {Promise}     Promise with decorated session object
    */
   afterAuth: function(data){
-    console.log('Gonna call node son!');
+    return Ember.RSVP.resolve(data);
+  },
+
+  /**
+   * Hook called after auth0 refreshes the jwt
+   * based on the refreshToken.
+   *
+   * This only fires if lock.js was passed in
+   * the offline_mode scope params
+   *
+   * IMPORTANT: You must return a promise with the 
+   * session data.
+   * 
+   * @param  {Object} data The new jwt
+   * @return {Promise}     The decorated session object
+   */
+  afterRestore: function(data){
     return Ember.RSVP.resolve(data);
   },
 
@@ -119,7 +180,6 @@ export default Base.extend({
    * @return {Promise}     Promise with decorated session object
    */
   afterRefresh: function(data){
-    console.log('Gonna call refresh node son!');
     return Ember.RSVP.resolve(data);
   }
 
@@ -127,19 +187,20 @@ export default Base.extend({
 
 ```
 
-If you are using ember-cli, you can then use this as follows:
+Once you've made your custom authenticator. Just do the following in your app route:
 
 ```js
-
 import Ember from 'ember';
 import ApplicationRouteMixin from 'simple-auth/mixins/application-route-mixin';
 
 export default Ember.Route.extend(ApplicationRouteMixin, {
   actions: {
-    showAuth0Lock: function(){
-      var options = {authParams:{scope: 'openid offline_access'}};
-
-      this.get('session').authenticate('authenticator:my-dope-authenticator', options);
+    sessionRequiresAuthentication: function(){
+      // Check out the docs for all the options: 
+      // https://auth0.com/docs/libraries/lock/customization
+      
+      var lockOptions = {authParams:{scope: 'openid offline_access'}};
+      this.get('session').authenticate('simple-auth-authenticator:my-dope-authenticator', lockOptions);
     }
   }
 });

@@ -35,7 +35,7 @@ export default Base.extend({
    * The Auth0 App ClientID found in your Auth0 dashboard
    * @type {String}
    */
-  clienID: read('_clientID'),
+  clientID: read('_clientID'),
   
   /**
    * The Auth0 App Domain found in your Auth0 dashboard
@@ -97,7 +97,14 @@ export default Base.extend({
   },
 
   /**
-   * Hook called before triggering the invalidate in simple auth
+   * Hook that gets called after the jwt has expired
+   * but before we notify the rest of the system.
+   * Great place to add cleanup to expire any third-party
+   * tokens or other cleanup.
+   *
+   * IMPORTANT: You must return a promise, else logout
+   * will not continue.
+   * 
    * @return {Promise}
    */
   beforeExpire: function(){
@@ -105,22 +112,52 @@ export default Base.extend({
   },
 
   /**
-   * Hook called after auth0 has authenticated but before
-   * the simple-auth completes session creation.
-   * This is a great place to decorate the session object.
+   * Hook that gets called after Auth0 successfully
+   * authenticates the user.
+   * Great place to make additional calls to other
+   * services, custom db, firebase, etc. then
+   * decorate the session object and pass it along.
+   *
+   * IMPORTANT: You must return a promise with the 
+   * session data.
    * 
-   * @return {Promoise} With the decorated session object
+   * @param  {Object} data Session object
+   * @return {Promise}     Promise with decorated session object
    */
   afterAuth: function(data){
     return Ember.RSVP.resolve(data);
   },
 
   /**
-   * Hook called after auth0 has refreshed the jwt but before
-   * the simple-auth triggers the sessionUpdated event.
-   * This is a great place to decorate the session object.
+   * Hook called after auth0 refreshes the jwt
+   * based on the refreshToken.
+   *
+   * This only fires if lock.js was passed in
+   * the offline_mode scope params
+   *
+   * IMPORTANT: You must return a promise with the 
+   * session data.
    * 
-   * @return {Promoise} With the decorated session object
+   * @param  {Object} data The new jwt
+   * @return {Promise}     The decorated session object
+   */
+  afterRestore: function(data){
+    return Ember.RSVP.resolve(data);
+  },
+
+  /**
+   * Hook that gets called after Auth0 successfully
+   * refreshes the jwt if (refresh token is enabled).
+   * 
+   * Great place to make additional calls to other
+   * services, custom db, firebase, etc. then
+   * decorate the session object and pass it along.
+   *
+   * IMPORTANT: You must return a promise with the 
+   * session data.
+   * 
+   * @param  {Object} data Session object
+   * @return {Promise}     Promise with decorated session object
    */
   afterRefresh: function(data){
     return Ember.RSVP.resolve(data);
@@ -136,10 +173,11 @@ export default Base.extend({
     }else{
       return this._extractExpireTime(this.get('jwt'));
     }
-  }.property('sessionData.jwt'),
+  }.property('jwt'),
 
   restore: function(data) {
     this.get('sessionData').setProperties(data);
+    var self = this;
 
     if(this._jwtRemainingTime() < 1){
       if(this.get('hasRefreshToken')){
@@ -148,9 +186,9 @@ export default Base.extend({
         return Ember.RSVP.reject();
       }
     }else{
-      return self.afterAuth(sessionData)
+      return this.afterRestore(this.get('sessionData'))
             .then(function(response){
-              return Ember.RSVP.resolve(this._setupFutureEvents(response));
+              return Ember.RSVP.resolve(self._setupFutureEvents(response));
             });
     }
   },
@@ -181,20 +219,25 @@ export default Base.extend({
   },
 
   invalidate: function(/* data */) {
-    var headers = {'Authorization':'Bearer ' + this.get('jwt')};
-    
-    var url = 'https://'+this.get('domain')+'/api/users/'+this.get('clientID')+'/refresh_tokens/'+this.get('refreshToken');
-    
-    var self = this;
-
-    return Ember.$.ajax(url, {type:"DELETE", headers:headers}).then(function(){
-      return self.beforeExpire();
-    });
+    if(this.get('hasRefreshToken')){
+      var url = 'https://'+this.get('domain')+'/api/users/'+this.get('userID')+'/refresh_tokens/'+this.get('refreshToken');
+      var self = this;
+      return this._makeAuth0Request(url, "DELETE").then(function(){
+        return self.beforeExpire();
+      });
+    }else{
+      return this.beforeExpire();
+    }
   },
 
   //=======================
   // Private Methods
   //=======================
+  _makeAuth0Request: function(url, method){
+    var headers = {'Authorization':'Bearer ' + this.get('jwt')};
+    return Ember.$.ajax(url, {type:method, headers:headers});
+  },
+
   _setupFutureEvents: function(data){
     this.get('sessionData', data).setProperties(data);
 
