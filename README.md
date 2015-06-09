@@ -229,3 +229,5 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
 });
 
 ```
+
+__Enjoy!__
