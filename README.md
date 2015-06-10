@@ -88,8 +88,6 @@ ENV['contentSecurityPolicy'] = {
 
 __Simple Lock__ is just a regular __authorizer__ that conforms to the [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth) interface. Please follow the docs to get everything working as usual, and just add the call to the *simple-auth-authenticator:lock* __authorizer__ in your ```authenticate``` call.
 
-[Ember Simple Auth](https://github.com/simplabs/ember-simple-auth)
-
 ### Actions
 
 Once the standard [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth) ```application_route_mixin``` is added to your app route, you will be able to use all the usual actions: [Docs](https://github.com/simplabs/ember-simple-auth)
