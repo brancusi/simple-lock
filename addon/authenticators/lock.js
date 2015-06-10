@@ -87,7 +87,6 @@ export default Base.extend({
 
     var lock = new Auth0Lock(this.get('clientID'), this.get('domain'));
     this.set('_lock', lock);
-
   },
 
   /**
@@ -259,7 +258,6 @@ export default Base.extend({
       var job = Ember.run.later(this, this._refreshAccessToken, refreshInMilli);
       this.set('_refreshJob', job);  
     }
-    
   },
 
   _scheduleExpire: function(){
@@ -290,7 +288,6 @@ export default Base.extend({
         }else{
           self.afterRefresh({jwt:result.id_token})
           .then(function(response){
-
             resolve(self._setupFutureEvents(response));  
           });
         }
