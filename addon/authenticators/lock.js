@@ -6,6 +6,10 @@ var bool = Ember.computed.bool;
 
 export default Base.extend({
   
+  //=======================
+  // Properties
+  //=======================
+  
   /**
    * The session data
    * @type {Ember Object}
@@ -19,6 +23,7 @@ export default Base.extend({
    * @type {Object}
    */
   config: read('_config'),
+
   /**
    * Auth0 Lock Instance
    * @type {Auth0Lock}
@@ -36,6 +41,7 @@ export default Base.extend({
    * @type {String}
    */
   domain: read('_domain'),
+
   /**
    * The auth0 userID.
    * @return {String}
@@ -74,21 +80,22 @@ export default Base.extend({
     return !Ember.isBlank(this.get('jwt'));
   }),
 
-  init: function() {
-    var applicationConfig = this.container.lookupFactory('config:environment');
+  /**
+   * The current JWT's expire time
+   * @return {Number in seconds}
+   */
+  expiresIn: Ember.computed('hasJWT', function(){
+    if(this.get('hasJWT')){
+      return this._extractExpireTime(this.get('jwt'));
+    }else{
+      return 0;
+    }
+  }),
 
-    var config = applicationConfig['simple-lock'];
-    this.set('_config', config);
-
-    this.set('_sessionData', Ember.Object.create());
-
-    this.set('_clientID', config.clientID);
-    this.set('_domain', config.domain);
-
-    var lock = new Auth0Lock(this.get('clientID'), this.get('domain'));
-    this.set('_lock', lock);
-  },
-
+  //=======================
+  // Hooks
+  //=======================
+  
   /**
    * Hook that gets called after the jwt has expired
    * but before we notify the rest of the system.
@@ -156,18 +163,6 @@ export default Base.extend({
     return Ember.RSVP.resolve(data);
   },
 
-  /**
-   * The last token refresh expire time
-   * @return {Number in seconds}
-   */
-  expiresIn: function(){
-    if(Ember.isEmpty(this.get('jwt'))){
-      return 0;
-    }else{
-      return this._extractExpireTime(this.get('jwt'));
-    }
-  }.property('jwt'),
-
   restore: function(data) {
     this.get('sessionData').setProperties(data);
     var self = this;
@@ -219,6 +214,24 @@ export default Base.extend({
     }else{
       return this.beforeExpire();
     }
+  },
+
+  //=======================
+  // Overrides
+  //=======================
+  init: function() {
+    var applicationConfig = this.container.lookupFactory('config:environment');
+
+    var config = applicationConfig['simple-lock'];
+    this.set('_config', config);
+
+    this.set('_sessionData', Ember.Object.create());
+
+    this.set('_clientID', config.clientID);
+    this.set('_domain', config.domain);
+
+    var lock = new Auth0Lock(this.get('clientID'), this.get('domain'));
+    this.set('_lock', lock);
   },
 
   //=======================
