@@ -1,12 +1,12 @@
 # Simple-Lock
-## An ember addon for using Auth0's Lock.js with Ember-Simple-Auth.
+### An ember-cli addon for using [Auth0](https://auth0.com/) with [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth).
 
-Auth0's Lock.js is a nice way to get a fully functional signup and login workflow into your app. [Auth0](https://auth0.com/).
+Auth0's [lock](https://github.com/auth0/lock) widget, is a nice way to get a fully functional signup and login workflow into your app.
 
 ## What does it do?
 
-* it __wires up Auth0's Lock.js to work with ember simple auth__ using [Auth0](https://auth0.com/) and [Lock](https://auth0.com/docs/lock).
-* it __lets you work with ember simple auth__ just like you normally do! [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth)
+* it __wires up Auth0's Lock.js to work with ember simple auth__.
+* it __lets you work with ember simple auth__ just like you normally do!
 
 ## Installation and Setup
 
@@ -18,6 +18,8 @@ If you don't already have an account, go signup at for free: [Auth0](https://aut
 2. Done!
 
 ### Install ember and simple-lock using ember-cli
+
+__Simple Lock requires at least Ember CLI 0.2.7 or higher__
 
 ```bash
 ember new hello-safe-world
@@ -62,6 +64,7 @@ ember server
 __The below steps will outline the steps to get up and running with the scaffolding:__
 
 ### Suggested security config
+
 ```js
 // config/environment.js
 
@@ -75,15 +78,21 @@ ENV['contentSecurityPolicy'] = {
 
 ```
 
+### Caveats
+
+1. Because ember simple auth listens for local storage changes, updates in one tab will trigger token refreshes in all open tabs of the same domain. This is not critical for long lived JWTs but will be noticable if there are several tabs of the app running on the same browser with very short lived JWTs.
+*I'm open to suggestions on getting around this.*
+
+
 ## Manual Setup
 
-Simple-Lock is just a single __authorizer__ that conforms to the ember-simple-auth interface. Please follow the docs to get everything working as usual and just add the call to the *Simple-Lock* __authorizer__ in your ```authenticate``` call.
+__Simple Lock__ is just a regular __authorizer__ that conforms to the [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth) interface. Please follow the docs to get everything working as usual, and just add the call to the *simple-auth-authenticator:lock* __authorizer__ in your ```authenticate``` call.
 
 [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth)
 
 ### Actions
 
-Once the standard ember-simple-auth ```application_route_mixin``` is added to your app route, you will be able to use all the usual actions: [Docs](https://github.com/simplabs/ember-simple-auth)
+Once the standard [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth) ```application_route_mixin``` is added to your app route, you will be able to use all the usual actions: [Docs](https://github.com/simplabs/ember-simple-auth)
 
 __Here is an example application route:__
 
@@ -122,7 +131,7 @@ __Then from your template you could trigger the usual actions:__
 
 ### Custom Authorizers
 
-You can easily extend the __simple-lock__ base authorizer to play hooky with some cool __hooks__.
+You can easily extend the __Simple Lock__ base __authorizer__ to play hooky with some cool __hooks__.
 
 Here's how:
 
