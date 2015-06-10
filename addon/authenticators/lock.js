@@ -13,12 +13,6 @@ export default Base.extend({
   sessionData: read('_sessionData'),
 
   /**
-   * The job queue
-   * @type {Ember Array}
-   */
-  scheduledJobCollection: read('_scheduledJobCollection'),
-
-  /**
    * The env config found in the environment config.
    * ENV['simple-lock']
    * 
@@ -87,13 +81,13 @@ export default Base.extend({
     this.set('_config', config);
 
     this.set('_sessionData', Ember.Object.create());
-    this.set('_scheduledJobCollection', Ember.A());
 
     this.set('_clientID', config.clientID);
     this.set('_domain', config.domain);
 
     var lock = new Auth0Lock(this.get('clientID'), this.get('domain'));
     this.set('_lock', lock);
+
   },
 
   /**
@@ -213,9 +207,7 @@ export default Base.extend({
           });
         }
       });
-
     });
-
   },
 
   invalidate: function(/* data */) {
@@ -239,10 +231,10 @@ export default Base.extend({
   },
 
   _setupFutureEvents: function(data){
-    this.get('sessionData', data).setProperties(data);
+    this.get('sessionData').setProperties(data);
 
     // Just got a new lease on life so let's clear all old jobs
-    this._clearJobQueue();
+    this._clearJobs();
 
     // Death comes to all of us, setup the expiration
     this._scheduleExpire();
@@ -256,30 +248,30 @@ export default Base.extend({
   },
 
   _scheduleRefresh: function(){
+    Ember.run.cancel(this.get('_refreshJob'));
+
     var remaining = this._jwtRemainingTime();
-    if(remaining < 5){
-      this._scheduleJob(this, this._refreshAccessToken, 0);  
-    }else{
-      this._scheduleJob(this, this._refreshAccessToken, (remaining-5)*1000);
+    var earlyRefresh = 30;
+    var refreshInSecond = (remaining < earlyRefresh) ? remaining/2 : remaining - earlyRefresh;
+    var refreshInMilli = refreshInSecond * 1000;
+
+    if(!isNaN(refreshInMilli) && refreshInMilli >= 50){
+      var job = Ember.run.later(this, this._refreshAccessToken, refreshInMilli);
+      this.set('_refreshJob', job);  
     }
+    
   },
 
   _scheduleExpire: function(){
-    this._scheduleJob(this, this._processSessionExpired, this._jwtRemainingTime()*1000);
+    Ember.run.cancel(this.get('_expireJob'));
+    var expireIn = this._jwtRemainingTime()*1000;
+    var job = Ember.run.later(this, this._processSessionExpired, expireIn);
+    this.set('_expireJob', job);
   },
 
-  _scheduleJob: function(scope, callback, time){
-    var job = Ember.run.later(scope, callback, time);
-    this.get('_scheduledJobCollection').addObject(job);
-  },
-
-  _clearJobQueue: function(){
-    var queue = this.get('_scheduledJobCollection');
-    queue.forEach(function(job){
-      Ember.run.cancel(job);
-    });
-
-    queue.clear();
+  _clearJobs: function(){
+    Ember.run.cancel(this.get('_expireJob'));
+    Ember.run.cancel(this.get('_refreshJob'));
   },
 
   _processSessionExpired: function(){
@@ -298,6 +290,7 @@ export default Base.extend({
         }else{
           self.afterRefresh({jwt:result.id_token})
           .then(function(response){
+
             resolve(self._setupFutureEvents(response));  
           });
         }
