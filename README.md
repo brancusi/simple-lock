@@ -20,15 +20,15 @@ If you don't already have an account, go signup at for free: [Auth0](https://aut
 ### Install ember and simple-lock using ember-cli
 
 ```bash
-bash:$ ember new hello-safe-world
-bash:$ cd hello-safe-world
-bash:$ ember install simple-lock
+ember new hello-safe-world
+cd hello-safe-world
+ember install simple-lock
 ```
 
 If you want to get up and running right away, you can scaffold all the neccesary routes with to play with:
 
 ```bash
-bash:$ ember generate scaffold-lock
+ember generate scaffold-lock
 ```
 
 ### Configuration
@@ -57,7 +57,7 @@ ENV['simple-lock'] = {
 __At this point if you ran *scaffold-lock*, you can fire up ember server:__
 
 ```bash
-bash:$ ember server
+ember server
 ```
 __The below steps will outline the steps to get up and running with the scaffolding:__
 
@@ -127,7 +127,7 @@ You can easily extend the __simple-lock__ base authorizer to play hooky with som
 Here's how:
 
 ```bash
-bash:$ ember generate authenticator my-dope-authenticator
+ember generate authenticator my-dope-authenticator
 ```
 
 This will create the following stub authenticator:
