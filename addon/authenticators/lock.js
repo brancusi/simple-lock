@@ -84,7 +84,7 @@ export default Base.extend({
    * The current JWT's expire time
    * @return {Number in seconds}
    */
-  expiresIn: Ember.computed('hasJWT', function(){
+  expiresIn: Ember.computed('hasJWT', 'jwt', function(){
     if(this.get('hasJWT')){
       return this._extractExpireTime(this.get('jwt'));
     }else{
@@ -261,10 +261,10 @@ export default Base.extend({
 
   _scheduleRefresh: function(){
     Ember.run.cancel(this.get('_refreshJob'));
-
+    
     var remaining = this._jwtRemainingTime();
     var earlyRefresh = 30;
-    var refreshInSecond = (remaining < earlyRefresh) ? remaining/2 : remaining - earlyRefresh;
+    var refreshInSecond = (remaining < (earlyRefresh*2)) ? remaining/2 : remaining - earlyRefresh;
     var refreshInMilli = refreshInSecond * 1000;
 
     if(!isNaN(refreshInMilli) && refreshInMilli >= 50){
@@ -275,8 +275,8 @@ export default Base.extend({
 
   _scheduleExpire: function(){
     Ember.run.cancel(this.get('_expireJob'));
-    var expireIn = this._jwtRemainingTime()*1000;
-    var job = Ember.run.later(this, this._processSessionExpired, expireIn);
+    var expireInMilli = this._jwtRemainingTime()*1000;
+    var job = Ember.run.later(this, this._processSessionExpired, expireInMilli);
     this.set('_expireJob', job);
   },
 
