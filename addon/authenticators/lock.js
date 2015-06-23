@@ -212,7 +212,7 @@ export default Base.extend({
         return self.beforeExpire();
       });
     }else{
-      return this.beforeExpire();
+      return self.beforeExpire();
     }
   },
 
@@ -287,7 +287,8 @@ export default Base.extend({
 
   _processSessionExpired: function(){
     var self = this;
-    this.beforeExpire().then(function(){
+    this.beforeExpire()
+    .then(function(){
       self.trigger('sessionDataInvalidated');
     });
   },

@@ -237,4 +237,8 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
 
 ```
 
+## License
+
+Simple-Lock by Aram Zadikian. It is released under the MIT License.
+
 __Enjoy!__
