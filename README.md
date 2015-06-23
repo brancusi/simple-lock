@@ -127,9 +127,9 @@ __Then from your template you could trigger the usual actions:__
 {{/if}}
 ```
 
-### Custom Authorizers
+### Custom Authenticators
 
-You can easily extend the __Simple Lock__ base __authorizer__ to play hooky with some cool __hooks__.
+You can easily extend the __Simple Lock__ base __authenticator__ to play hooky with some cool __hooks__.
 
 Here's how:
 
@@ -140,7 +140,7 @@ ember generate authenticator my-dope-authenticator
 This will create the following stub authenticator:
 
 ```js
-// app/authorizers/my-dope-authenticator.js
+// app/authenticators/my-dope-authenticator.js
 
 import Base from 'simple-lock/authenticators/lock';
 
