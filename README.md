@@ -1,4 +1,4 @@
-# Simple-Lock
+# Auth0 Ember simple auth
 ### An ember-cli addon for using [Auth0](https://auth0.com/) with [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth).
 
 Auth0's [lock](https://github.com/auth0/lock) widget, is a nice way to get a fully functional signup and login workflow into your app.
@@ -236,6 +236,9 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
 });
 
 ```
+## Credits
+
+Written by @brancusi (Aram Zadikian), maintained in part by Auth0. Thanks Aram!
 
 ## License
 
