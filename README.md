@@ -1,4 +1,4 @@
-# Simple-Lock
+# Auth0 Ember simple auth
 ### An ember-cli addon for using [Auth0](https://auth0.com/) with [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth).
 
 Auth0's [lock](https://github.com/auth0/lock) widget, is a nice way to get a fully functional signup and login workflow into your app.
@@ -17,17 +17,15 @@ If you don't already have an account, go signup at for free: [Auth0](https://aut
 1. Create a new app through your dashboard.
 2. Done!
 
-### Install ember and simple-lock using ember-cli
-
-__Simple Lock requires at least Ember CLI 0.2.7 or higher__
+### Generate a new ember app and install `auth0-ember-simple-auth` using ember-cli (Ember CLI >= 0.2.7)
 
 ```bash
 ember new hello-safe-world
 cd hello-safe-world
-ember install simple-lock
+ember install auth0-ember-simple-auth
 ```
 
-If you want to get up and running right away, you can scaffold all the neccesary routes with to play with:
+If you want to get up and running right away, you can scaffold all the necessary routes with to play with:
 
 ```bash
 ember generate scaffold-lock
@@ -59,11 +57,13 @@ ENV['simple-lock'] = {
 __At this point if you ran *scaffold-lock*, you can fire up ember server:__
 
 ```bash
-ember server
+ember server --port
 ```
 __The below steps will outline the steps to get up and running with the scaffolding:__
 
 ### Suggested security config
+
+Ember uses a [content security policy](http://www.html5rocks.com/en/tutorials/security/content-security-policy/) to manage which resources are allowed to be run on your pages.
 
 ```js
 // config/environment.js
@@ -80,13 +80,13 @@ ENV['contentSecurityPolicy'] = {
 
 ### Caveats
 
-1. Because ember simple auth listens for local storage changes, updates in one tab will trigger token refreshes in all open tabs of the same domain. This is not critical for long lived JWTs but will be noticable if there are several tabs of the app running on the same browser with very short lived JWTs.
+1. Because ember simple auth listens for local storage changes, updates in one tab will trigger token refreshes in all open tabs of the same domain. This is not critical for long lived JWTs but will be noticeable if there are several tabs of the app running on the same browser with very short lived JWTs.
 *I'm open to suggestions on getting around this.*
 
 
 ## Manual Setup
 
-__Simple Lock__ is just a regular __authorizer__ that conforms to the [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth) interface. Please follow the docs to get everything working as usual, and just add the call to the *simple-auth-authenticator:lock* __authorizer__ in your ```authenticate``` call.
+__auth0-ember-simple-auth__ is just a regular __authorizer__ that conforms to the [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth) interface. Please follow the docs to get everything working as usual, and just add the call to the *simple-auth-authenticator:lock* __authorizer__ in your ```authenticate``` call.
 
 ### Actions
 
@@ -103,9 +103,9 @@ import ApplicationRouteMixin from 'simple-auth/mixins/application-route-mixin';
 export default Ember.Route.extend(ApplicationRouteMixin, {
   actions: {
     sessionRequiresAuthentication: function(){
-      // Check out the docs for all the options: 
+      // Check out the docs for all the options:
       // https://auth0.com/docs/libraries/lock/customization
-      
+
       // These options will request a refresh token and launch lock.js in popup mode by default
       var lockOptions = {authParams:{scope: 'openid offline_access'}};
 
@@ -154,7 +154,7 @@ export default Base.extend({
    *
    * IMPORTANT: You must return a promise, else logout
    * will not continue.
-   * 
+   *
    * @return {Promise}
    */
   beforeExpire: function(){
@@ -168,9 +168,9 @@ export default Base.extend({
    * services, custom db, firebase, etc. then
    * decorate the session object and pass it along.
    *
-   * IMPORTANT: You must return a promise with the 
+   * IMPORTANT: You must return a promise with the
    * session data.
-   * 
+   *
    * @param  {Object} data Session object
    * @return {Promise}     Promise with decorated session object
    */
@@ -185,9 +185,9 @@ export default Base.extend({
    * This only fires if lock.js was passed in
    * the offline_mode scope params
    *
-   * IMPORTANT: You must return a promise with the 
+   * IMPORTANT: You must return a promise with the
    * session data.
-   * 
+   *
    * @param  {Object} data The new jwt
    * @return {Promise}     The decorated session object
    */
@@ -198,14 +198,14 @@ export default Base.extend({
   /**
    * Hook that gets called after Auth0 successfully
    * refreshes the jwt if (refresh token is enabled).
-   * 
+   *
    * Great place to make additional calls to other
    * services, custom db, firebase, etc. then
    * decorate the session object and pass it along.
    *
-   * IMPORTANT: You must return a promise with the 
+   * IMPORTANT: You must return a promise with the
    * session data.
-   * 
+   *
    * @param  {Object} data Session object
    * @return {Promise}     Promise with decorated session object
    */
@@ -226,9 +226,9 @@ import ApplicationRouteMixin from 'simple-auth/mixins/application-route-mixin';
 export default Ember.Route.extend(ApplicationRouteMixin, {
   actions: {
     sessionRequiresAuthentication: function(){
-      // Check out the docs for all the options: 
+      // Check out the docs for all the options:
       // https://auth0.com/docs/libraries/lock/customization
-      
+
       var lockOptions = {authParams:{scope: 'openid offline_access'}};
       this.get('session').authenticate('simple-auth-authenticator:my-dope-authenticator', lockOptions);
     }
@@ -236,9 +236,12 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
 });
 
 ```
+## Credits
+
+Written by @brancusi (Aram Zadikian), maintained in part by Auth0. Thanks Aram!
 
 ## License
 
-Simple-Lock by Aram Zadikian. It is released under the MIT License.
+auth0-ember-simple-auth by Aram Zadikian. It is released under the MIT License.
 
 __Enjoy!__
