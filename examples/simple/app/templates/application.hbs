@@ -1,0 +1,12 @@
+<div class="login-page clearfix">
+  <header>
+    {{#if session.isAuthenticated}}
+      <h5>Hi, {{session.secure.profile.name}}</h5>
+      <button class="btn btn-primary btn-lg btn-login btn-block" {{ action 'invalidateSession' }}>Sign out</button>
+    {{else}}
+      <button class="btn btn-primary btn-lg btn-login btn-block" {{ action 'sessionRequiresAuthentication' }}>Sign in</button>
+    {{/if}}
+  </header>
+
+  {{outlet}}
+</div>
