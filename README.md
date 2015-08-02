@@ -1,3 +1,5 @@
+# This add-on is now being maintained by the Auth0 team. Please use instead: [auth0-ember-simple-auth](https://github.com/auth0/auth0-ember-simple-auth)
+
 # Simple-Lock
 ### An ember-cli addon for using [Auth0](https://auth0.com/) with [Ember Simple Auth](https://github.com/simplabs/ember-simple-auth).
 
